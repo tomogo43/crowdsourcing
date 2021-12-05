@@ -96,14 +96,18 @@ public class WifiJobService extends JobService {
                         // parcourir la liste retournée par le scan
                         for (ScanResult s : scanResults) {
 
-                            // ajout des données dans la base de données
+
+                            // timestamp
                             values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_TIMESTAMP, timestamp);
+
                             // APs wifi
                             values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_BSSID, s.BSSID);
-                            // température CPU de l'appareil
-                            values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_CPU_TEMP,
-                                    CPUTemperature());
 
+                            // TODO latitude
+
+                            // TODO longitude
+
+                            // ajout des données dans la base de données
                             db.insert(
                                     DatabaseHelper.FeedEntry.TABLE_NAME, null, values);
 
@@ -227,31 +231,6 @@ public class WifiJobService extends JobService {
 
     }
 
-    /**
-     * Récupère la température du CPU
-     * @return temperature
-     */
-    public float CPUTemperature() {
-        Process process;
-        try {
-            process = Runtime.getRuntime().exec("cat sys/class/thermal/thermal_zone0/temp");
-            process.waitFor();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line = reader.readLine();
-            if(line!=null) {
-                float temp = Float.parseFloat(line);
-                return temp / 1000.0f;
-            }else{
-                return 51.0f;
-            }
-        } catch (InterruptedException e1) {
-            e1.printStackTrace();
-            return 0.0f;
-        } catch (IOException e2) {
-            e2.printStackTrace();
-            return 0.0f;
-        }
-    }
 
 }
 

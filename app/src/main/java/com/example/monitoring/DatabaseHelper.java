@@ -18,7 +18,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + FeedEntry.TABLE_NAME + "(" +
                     FeedEntry.COLUMN_NAME_TIMESTAMP + " TEXT," +
                     FeedEntry.COLUMN_NAME_BSSID + " TEXT," +
-                    FeedEntry.COLUMN_NAME_CPU_TEMP + " TEXT)";
+                    FeedEntry.COLUMN_NAME_LATITUDE + "  TEXT," +
+                    FeedEntry.COLUMN_NAME_LONGITUDE + " TEXT)";
 
     public static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + FeedEntry.TABLE_NAME;
@@ -44,6 +45,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         public static final String TABLE_NAME = "data_save";
         public static final String COLUMN_NAME_TIMESTAMP = "timestamp";
         public static final String COLUMN_NAME_BSSID = "BSSID";
-        public static final String COLUMN_NAME_CPU_TEMP = "temperature_cpu";
+        public static final String COLUMN_NAME_LATITUDE = "latitude";
+        public static final String COLUMN_NAME_LONGITUDE = "longitude";
     }
 }

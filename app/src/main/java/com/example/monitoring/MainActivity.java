@@ -166,9 +166,6 @@ public class MainActivity extends AppCompatActivity {
             String result =
                     "BSSID: " +
                     c.getString(c.getColumnIndexOrThrow(DatabaseHelper.FeedEntry.COLUMN_NAME_BSSID))
-                    + " température CPU: " +
-                    c.getString(c.getColumnIndexOrThrow(
-                            DatabaseHelper.FeedEntry.COLUMN_NAME_CPU_TEMP)) + " °C"
                     + " timestamp: " +
                     c.getString(c.getColumnIndexOrThrow(
                             DatabaseHelper.FeedEntry.COLUMN_NAME_TIMESTAMP));
