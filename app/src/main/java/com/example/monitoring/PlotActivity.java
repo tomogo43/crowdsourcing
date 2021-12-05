@@ -43,7 +43,13 @@ public class PlotActivity extends AppCompatActivity {
             Integer[] nbApps = new Integer[c.getCount()];
             c.moveToFirst();
 
-            for (int i = 0; i < c.getCount(); i++) {
+            // Le graphe ne s'affiche pas si seulement les mêmes valeurs de nbApp
+            // met par défaut une valeur à 0 à timestamp 0 pour contrer ce problème
+            ids[0] = 0;
+            times[0] = 0;
+            nbApps[0] = 0;
+
+             for (int i = 1; i < c.getCount(); i++) {
                 // Lire les colonnes de chaque lignes
                 ids[i] = i; // measurement id
                 times[i] = c.getInt(0); // colonne 0 : timestamp

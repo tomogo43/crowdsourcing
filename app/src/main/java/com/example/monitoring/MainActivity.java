@@ -4,6 +4,7 @@
  */
 package com.example.monitoring;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -13,6 +14,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Binder;
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 
 
     public void startJob(View v) {
@@ -168,7 +171,13 @@ public class MainActivity extends AppCompatActivity {
                     c.getString(c.getColumnIndexOrThrow(DatabaseHelper.FeedEntry.COLUMN_NAME_BSSID))
                     + " timestamp: " +
                     c.getString(c.getColumnIndexOrThrow(
-                            DatabaseHelper.FeedEntry.COLUMN_NAME_TIMESTAMP));
+                            DatabaseHelper.FeedEntry.COLUMN_NAME_TIMESTAMP))
+                    + " latitude: " +
+                    c.getString(c.getColumnIndexOrThrow(
+                            DatabaseHelper.FeedEntry.COLUMN_NAME_LATITUDE))
+                    + " longitude: " +
+                            c.getString(c.getColumnIndexOrThrow(
+                                    DatabaseHelper.FeedEntry.COLUMN_NAME_LONGITUDE));
             adapter.add(result);
         }
 
@@ -186,6 +195,18 @@ public class MainActivity extends AppCompatActivity {
 
         db.execSQL("DELETE FROM " + DatabaseHelper.FeedEntry.TABLE_NAME);
 
+        // supprime les données de la liste
+        adapter.clear();
+
+    }
+
+    /**
+     * Affiche les points d'accès sur la map
+     * @param v
+     */
+    public void onShMap(View v) {
+        Intent i = new Intent(MainActivity.this, MapsActivity.class);
+        startActivity(i);
     }
 
 

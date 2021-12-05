@@ -5,16 +5,27 @@
  */
 package com.example.monitoring;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.util.Xml;
+
+import androidx.core.app.ActivityCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -47,22 +58,20 @@ public class WifiJobService extends JobService {
 
     private WifiManager wifiMan;
 
-    // Enregistrer dans un fichier XML
-    public static final String fileName = "sauvegarde.xml";
-    private FileOutputStream fos;
-    private XmlSerializer serializer;
 
     // zone date
     private Long tsLong;
     private String timestamp;
+
+    LocationManager locationManager = null;
+
+    private String fournisseur;
 
 
     Runnable run = new Runnable() {
         @Override
         public void run() {
 
-            // initialisation du fichier de sauvegarde
-            initializeOutputFile();
 
             wifiMan = (WifiManager) getApplicationContext()
                     .getSystemService(Context.WIFI_SERVICE);
@@ -73,6 +82,22 @@ public class WifiJobService extends JobService {
 
             ContentValues values = new ContentValues();
 
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            Criteria criteres = new Criteria();
+
+            // la précision
+            criteres.setAccuracy(Criteria.ACCURACY_FINE);
+
+            fournisseur = locationManager.getBestProvider(criteres, true);
+            Log.d("GPS", "fournisseur : " + fournisseur);
+
+
+            // la consommation d'énergie demandée
+            criteres.setCostAllowed(true);
+            criteres.setPowerRequirement(Criteria.POWER_HIGH);
+
+            fournisseur = locationManager.getBestProvider(criteres, true);
+            Log.d("GPS", "fournisseur : " + fournisseur);
 
             while (!jobCancelled) {
 
@@ -80,63 +105,48 @@ public class WifiJobService extends JobService {
                     List<ScanResult> scanResults = wifiMan.getScanResults();
 
 
-                    try {
+                    // mise en forme timestamp
+                    tsLong = System.currentTimeMillis() / 1000;
+                    timestamp = tsLong.toString();
+
+                    // parcourir la liste retournée par le scan
+                    for (ScanResult s : scanResults) {
 
 
-                        // début balise measurement
-                        serializer.startTag(null, "measurement");
-                        tsLong = System.currentTimeMillis()/1000;
-                        timestamp = tsLong.toString();
+                        // timestamp
+                        values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_TIMESTAMP, timestamp);
 
-                        serializer.startTag(null, "timestamp");
-                        serializer.text(timestamp);
-                        serializer.endTag(null, "timestamp");
-
-                        serializer.startTag(null, "BSSID");
-                        // parcourir la liste retournée par le scan
-                        for (ScanResult s : scanResults) {
+                        // APs wifi
+                        values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_BSSID, s.BSSID);
 
 
-                            // timestamp
-                            values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_TIMESTAMP, timestamp);
+                        @SuppressLint("MissingPermission")
+                        Location localisation = locationManager.getLastKnownLocation(fournisseur);
 
-                            // APs wifi
-                            values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_BSSID, s.BSSID);
+                        // latitude
+                        values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_LATITUDE,
+                                localisation.getLatitude());
 
-                            // TODO latitude
-
-                            // TODO longitude
-
-                            // ajout des données dans la base de données
-                            db.insert(
-                                    DatabaseHelper.FeedEntry.TABLE_NAME, null, values);
-
-                            // ouverture balise record
-                            serializer.startTag(null, "record");
-                            // affiche le SSID des points d'accès wifi
-                            Log.d(TAG, "ssid = " + s.SSID);
-                            Log.d(TAG, "ssid = " + s.BSSID);
-
-                            // ajout de la donnée entre les balises record
-                            serializer.text(s.BSSID);
-
-                            //fermeture balise record
-                            serializer.endTag(null, "record");
-
-                        }
-                        serializer.endTag(null, "BSSID");
-
-                        // fin balise measurement
-                        serializer.endTag(null, "measurement");
+                        // longitude
+                        values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_LONGITUDE,
+                                localisation.getLongitude());
 
 
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        // ajout des données dans la base de données
+                        db.insert(
+                                DatabaseHelper.FeedEntry.TABLE_NAME, null, values);
+
+
+                        // affiche le SSID & BSSID des points d'accès wifi
+                        Log.d(TAG, "ssid = " + s.SSID);
+                        Log.d(TAG, "bssid = " + s.BSSID);
+
+                        // affiche les coordonnées GPS
+                        Log.d(TAG, "Latitude : " + localisation.getLatitude());
+                        Log.d(TAG, "Longitude : " + localisation.getLongitude());
+
                     }
-
-
-
 
                     Thread.sleep(10000); // effectue un scan toutes les 10 sec
                 } catch (InterruptedException e) {
@@ -187,48 +197,8 @@ public class WifiJobService extends JobService {
         // arrêter le thread du job ici
         jobCancelled = true;
 
-        // fin de la sauvegarde desdonnées
-        endSaveData();
-
 
         return true; // relancer la tâche
-    }
-
-    /**
-     * Initialisation de l'en-tête du fichier XML
-     */
-    public void initializeOutputFile() {
-        try {
-            deleteFile(fileName);
-            fos = openFileOutput(fileName, Context.MODE_APPEND);
-
-            serializer = Xml.newSerializer();
-            serializer.setOutput(fos, "UTF-8");
-            serializer.startDocument(null, Boolean.valueOf(true));
-            serializer.setFeature(
-                    "http://xmlpull.org/v1/doc/features.html#indent-output", true);
-            serializer.startTag(null, "root");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Ecriture de l'objet sérialisé qui contient toutes les balises dans sauvegarde.xml
-     * Ferme le fichier après avoir terminé l'écriture
-     */
-    public void endSaveData() {
-        Log.d(TAG, "endSaveData: ici");
-        try {
-            serializer.endTag(null, "root");
-            serializer.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
 

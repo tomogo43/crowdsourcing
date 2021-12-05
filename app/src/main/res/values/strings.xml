@@ -11,5 +11,7 @@
     <string name="previous">Previous</string>
     <string name="afficher">Graphique</string>
     <string name="reset">Reset</string>
+    <string name="show_map">Show Map</string>
+    <string name="title_activity_maps">MapsActivity</string>
 
 </resources>

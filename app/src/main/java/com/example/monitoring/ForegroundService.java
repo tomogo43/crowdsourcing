@@ -31,7 +31,7 @@ public class ForegroundService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        // lancement du job
+        // lancement du job WIFI
         ComponentName serviceName = new ComponentName(this, WifiJobService.class);
         JobInfo jobInfo = new JobInfo.Builder(JOB_ID, serviceName)
                 .setPersisted(true)
@@ -46,6 +46,8 @@ public class ForegroundService extends Service {
         } else {
             Log.d(TAG, "scheduleJobWifi fail");
         }
+
+
     }
 
     @Override
