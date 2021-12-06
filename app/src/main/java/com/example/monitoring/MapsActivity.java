@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -18,6 +19,11 @@ import com.example.monitoring.databinding.ActivityMapsBinding;
 
 import java.util.List;
 
+/**
+ * Affiche sur une map les endroits visités et le nombre de point d'accès WiFi scanné
+ * @author Thomas ESCUDERO
+ * @version 1.0
+ */
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -63,8 +69,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         // regarde les différentes positions où a été fait les mesures et comptabilise le nombre d'APs
-        Cursor c = db.rawQuery("SELECT DISTINCT latitude, longitude, COUNT(DISTINCT BSSID) " +
-                "FROM data_save", null);
+        Cursor c = db.rawQuery("SELECT COUNT(DISTINCT bssid), latitude, longitude " +
+                "FROM data_save GROUP BY latitude, longitude", null);
 
         while(c.moveToNext()) {
             latitude = c.getDouble(c.getColumnIndexOrThrow(DatabaseHelper.FeedEntry.COLUMN_NAME_LATITUDE));
@@ -74,13 +80,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             LatLng latLng = new LatLng(latitude, longitude);
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.position(latLng);
-            markerOptions.title("nb AP = " + c.getInt(2));
+            markerOptions.title("nb AP = " + c.getInt(0));
             mMap.addMarker(markerOptions);
 
             // sauvegarde la dernière position placée
             lastLocationPlaced = latLng;
 
         }
+
+        // animation zoom sur la dernière position GPS ajoutée
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lastLocationPlaced, 12.0f));
     }
 }

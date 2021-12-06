@@ -16,6 +16,11 @@ import com.androidplot.xy.XYSeries;
 
 import java.util.Arrays;
 
+/**
+ * Affiche les données sous format graphique
+ * @author Thomas ESCUDERO
+ * @version 1.0
+ */
 public class PlotActivity extends AppCompatActivity {
 
     public static final String TAG = "PlotActivity";

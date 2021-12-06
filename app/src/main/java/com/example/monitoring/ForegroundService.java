@@ -21,6 +21,11 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+/**
+ * Gestion de l'exécution du job en premier plan
+ * @author Thomas ESCUDERO
+ * @version 1.0
+ */
 public class ForegroundService extends Service {
     public static final String CHANNEL_ID = "foregroundServiceChannel";
     public static final int NOTIFICATION_ID = 1337;

@@ -6,8 +6,10 @@ package com.example.monitoring;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
@@ -17,6 +19,9 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -45,6 +50,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+/**
+ * Classe principale application monitoring, cette application a pour vocation à analyser les points
+ * d'accès WiFi présents et d'en comptabiliser le nombre à chaque instant T et d'afficher sur une
+ * map leur position
+ * @author Thomas ESCUDERO
+ * @version 1.0
+ */
 public class MainActivity extends AppCompatActivity {
 
     public static Context context;
@@ -56,13 +68,14 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter adapter;
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         this.context = this;
-
 
 
         wordList = new ArrayList<String>();
@@ -73,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
 
 
     public void startJob(View v) {
@@ -99,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(plotActivity);
 
     }
-
 
 
 
@@ -164,6 +175,10 @@ public class MainActivity extends AppCompatActivity {
 
         Cursor c = db.rawQuery("SELECT * FROM data_save", null);
         Log.d(TAG, "there are " + c.getCount() + " in result query");
+
+        if (c.getCount() == 0) {
+            Toast.makeText(this, "Aucune donnée à afficher", Toast.LENGTH_SHORT).show();
+        }
 
         while(c.moveToNext()) {
             String result =

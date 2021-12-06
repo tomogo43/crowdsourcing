@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
@@ -55,20 +56,17 @@ public class WifiJobService extends JobService {
     private boolean jobCancelled = false;
     private JobParameters parm;
 
-
     private WifiManager wifiMan;
-
 
     // zone date
     private Long tsLong;
     private String timestamp;
 
-    LocationManager locationManager = null;
-
-    private String fournisseur;
+    private GPSCalculator gps = null;
 
 
     Runnable run = new Runnable() {
+        @SuppressLint("MissingPermission")
         @Override
         public void run() {
 
@@ -82,22 +80,6 @@ public class WifiJobService extends JobService {
 
             ContentValues values = new ContentValues();
 
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            Criteria criteres = new Criteria();
-
-            // la précision
-            criteres.setAccuracy(Criteria.ACCURACY_FINE);
-
-            fournisseur = locationManager.getBestProvider(criteres, true);
-            Log.d("GPS", "fournisseur : " + fournisseur);
-
-
-            // la consommation d'énergie demandée
-            criteres.setCostAllowed(true);
-            criteres.setPowerRequirement(Criteria.POWER_HIGH);
-
-            fournisseur = locationManager.getBestProvider(criteres, true);
-            Log.d("GPS", "fournisseur : " + fournisseur);
 
             while (!jobCancelled) {
 
@@ -120,16 +102,13 @@ public class WifiJobService extends JobService {
                         values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_BSSID, s.BSSID);
 
 
-                        @SuppressLint("MissingPermission")
-                        Location localisation = locationManager.getLastKnownLocation(fournisseur);
-
                         // latitude
                         values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_LATITUDE,
-                                localisation.getLatitude());
+                                gps.getLatitude());
 
                         // longitude
                         values.put(DatabaseHelper.FeedEntry.COLUMN_NAME_LONGITUDE,
-                                localisation.getLongitude());
+                                gps.getLongitude());
 
 
 
@@ -143,8 +122,8 @@ public class WifiJobService extends JobService {
                         Log.d(TAG, "bssid = " + s.BSSID);
 
                         // affiche les coordonnées GPS
-                        Log.d(TAG, "Latitude : " + localisation.getLatitude());
-                        Log.d(TAG, "Longitude : " + localisation.getLongitude());
+                        Log.d(TAG, "Latitude : " + gps.getLatitude());
+                        Log.d(TAG, "Longitude : " + gps.getLongitude());
 
                     }
 
@@ -160,6 +139,7 @@ public class WifiJobService extends JobService {
 
             // Lorsque le traitement est terminé appel jobFinished sans relancer le job
             Log.d(TAG, "job finished");
+            gps.stop();
             jobFinished(parm, false);
 
 
@@ -168,11 +148,20 @@ public class WifiJobService extends JobService {
 
 
 
+
     // Méthode appelée quand la tâche est lancée
     @Override
     public boolean onStartJob(JobParameters params) {
         Log.d(TAG, " onStartJob id = " + params.getJobId());
+        gps = new GPSCalculator();
+
+        Log.d(TAG, "onStartJob: lancementGPS");
+        gps.run(MainActivity.context);
+
+        // attendre l'acquisition de la position GPS
+
         doBackgroundWork(params);
+
         return true;
     }
 

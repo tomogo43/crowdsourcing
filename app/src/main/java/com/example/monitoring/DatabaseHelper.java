@@ -8,6 +8,7 @@ import android.provider.BaseColumns;
 import androidx.annotation.Nullable;
 
 /**
+ * Création d'une table pour la BDD SQLite
  * @author ESCUDERO Thomas
  * @version 1.0
  */

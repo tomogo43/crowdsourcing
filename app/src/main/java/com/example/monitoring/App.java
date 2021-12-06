@@ -10,6 +10,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
 
+/**
+ * Gestion d'un channel pour la notification du job en premier plan
+ * @author Thomas ESCUDERO
+ * @version 1.0
+ */
 public class App extends Application {
     public static final String CHANNEL_ID = "foregroundServiceChannel";
 
