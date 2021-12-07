@@ -50,6 +50,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+/**
+ * Effectue des mesures des points d'accès wifi et les enregistre dans une BDD avec leur position
+ * GPS (latitude + longitude)
+ * Effectue une mesure toutes les 10 secondes
+ * @author Thomas ESCUDERO
+ * @version 1.0
+ */
 public class WifiJobService extends JobService {
 
     private static final String TAG = "WifiJobService";

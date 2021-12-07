@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    public static final String DATABASE_NAME = "sauvegarde.db";
+    public static final String DATABASE_NAME = "sauvegarde.db"; // nom BDD
     public static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + FeedEntry.TABLE_NAME + "(" +
                     FeedEntry.COLUMN_NAME_TIMESTAMP + " TEXT," +
@@ -41,9 +41,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    /* Inner class that defines the table contents */
+    /* Classe interne qui définie les colonnes de la table */
     public static class FeedEntry implements BaseColumns {
+        // nom table
         public static final String TABLE_NAME = "data_save";
+        // ************ colonnes *****************
         public static final String COLUMN_NAME_TIMESTAMP = "timestamp";
         public static final String COLUMN_NAME_BSSID = "BSSID";
         public static final String COLUMN_NAME_LATITUDE = "latitude";

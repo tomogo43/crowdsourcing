@@ -87,7 +87,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    /**
+     * Lance le job en appuyant sur bouton start
+     * @param v View
+     */
     public void startJob(View v) {
         // désactive le bouton start et active le bouton stop
         Button btn_stop = findViewById(R.id.button2);
@@ -97,6 +100,10 @@ public class MainActivity extends AppCompatActivity {
         scheduleJobWifi();
     }
 
+    /**
+     * Arrête le job lancé en appuyant sur le bouton stop
+     * @param v View
+     */
     public void stopJob(View v) {
         // désactive le bouton start et active le bouton stop
         Button btn_start = findViewById(R.id.btn_start);
@@ -106,6 +113,10 @@ public class MainActivity extends AppCompatActivity {
         cancelJob();
     }
 
+    /**
+     * Lance l'activité plotActivity pour afficher les résultats de la mesure dans un graph
+     * @param v View
+     */
     public void afficheData(View v) {
         Intent plotActivity =  new Intent(this, PlotActivity.class);
         startActivity(plotActivity);
